@@ -1,11 +1,6 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-author: Daddy the Runner
-date:  "`r format(Sys.time(), '%A, %B %d, %Y')`"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
+Daddy the Runner  
+`r format(Sys.time(), '%A, %B %d, %Y')`  
 
 <!-- Create some style elements for the HTML file -->
 <style>
@@ -28,7 +23,8 @@ p {
 
 First, we load all required libraries.
 
-```{r load-libraries, warning=FALSE, error=FALSE, message=FALSE}
+
+```r
 require(dplyr)
 require(ggplot2)
 ```
@@ -36,7 +32,8 @@ require(ggplot2)
 The following code chunk will extract the data file from the
 zip file if it doesn't exist in the local directory.
 
-```{r unpacking}
+
+```r
 data.fn <- "activity.csv"
 zip.fn <- "activity.zip"
 if (!file.exists(data.fn)) {
@@ -48,13 +45,15 @@ if (!file.exists(data.fn)) {
 Once we have the data file extracted, we read it in using the
 following code.
 
-```{r load-data}
+
+```r
 data <- read.csv(data.fn, stringsAsFactors = FALSE)
 ```
 
 Now we are ready to preprocess the data.
 
-```{r convert-dates}
+
+```r
 ## Convert the dates to Date objects
 data <- mutate(data, date = as.Date(date))
 ```
@@ -68,7 +67,8 @@ First the data is processed to remove all of the missin (NA) values.
 Then it is grouped by date and summarized using the `sum()` function.
 Finally `ggplot()` is invoked to generate the histogram graphic.
 
-```{r make-daily-steps-histogram}
+
+```r
 ## Create a histogram of the daily steps taken
 ## group by day and sum the steps
 daily.data <- na.omit(data) %>% 
@@ -92,15 +92,17 @@ hist.plot <- ggplot(daily.data, aes(x=steps)) +
 hist.plot
 ```
 
+![](PA1_template_files/figure-html/make-daily-steps-histogram-1.png) 
+
 <span class="fig-caption">
-**Fig. `r fig.num` Histogram of the daily steps.**  The histogram
+**Fig. 1 Histogram of the daily steps.**  The histogram
 shows the total number of days where the daily step count falls
 within each of the bins across the x axis.
 </span>
 
 The mean number of daily steps taken, when steps were recorded, was 
-`r sprintf("%0.2f", mean(daily.data$steps))` and
-the median number of daily steps was `r median(daily.data$steps)`.
+10766.19 and
+the median number of daily steps was 10765.
 
 
 
