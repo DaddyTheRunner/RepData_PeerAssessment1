@@ -1,11 +1,12 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-author: Daddy the Runner
-date:  "Saturday, January 10, 2015"
 output: 
   html_document:
     keep_md: true
 ---
+
+# Reproducible Research: Peer Assessment 1
+_**Author:  Daddy the Runner**_  
+_**Date:  Saturday, January 10, 2015**_
 
 <!-- Create some style elements for the HTML file -->
 <style>
