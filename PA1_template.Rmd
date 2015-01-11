@@ -102,6 +102,12 @@ The mean number of daily steps taken, when steps were recorded, was
 `r sprintf("%0.2f", mean(daily.data$steps))` and
 the median number of daily steps was `r median(daily.data$steps)`.
 
+> **Note:** The following in-line code was used to generate the mean
+> and median values in the previous paragraph:
+>
+> sprintf("%0.2f", mean(daily.data$steps))
+>
+> median(daily.data$steps)
 
 
 ## What is the average daily activity pattern?

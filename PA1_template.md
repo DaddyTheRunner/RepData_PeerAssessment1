@@ -1,6 +1,11 @@
-# Reproducible Research: Peer Assessment 1
-Daddy the Runner  
-`r format(Sys.time(), '%A, %B %d, %Y')`  
+---
+title: "Reproducible Research: Peer Assessment 1"
+author: Daddy the Runner
+date:  "Saturday, January 10, 2015"
+output: 
+  html_document:
+    keep_md: true
+---
 
 <!-- Create some style elements for the HTML file -->
 <style>
@@ -92,7 +97,7 @@ hist.plot <- ggplot(daily.data, aes(x=steps)) +
 hist.plot
 ```
 
-![](PA1_template_files/figure-html/make-daily-steps-histogram-1.png) 
+![plot of chunk make-daily-steps-histogram](figure/make-daily-steps-histogram-1.png) 
 
 <span class="fig-caption">
 **Fig. 1 Histogram of the daily steps.**  The histogram
@@ -104,6 +109,12 @@ The mean number of daily steps taken, when steps were recorded, was
 10766.19 and
 the median number of daily steps was 10765.
 
+> **Note:** The following in-line code was used to generate the mean
+> and median values in the previous paragraph:
+>
+> sprintf("%0.2f", mean(daily.data$steps))
+>
+> median(daily.data$steps)
 
 
 ## What is the average daily activity pattern?
