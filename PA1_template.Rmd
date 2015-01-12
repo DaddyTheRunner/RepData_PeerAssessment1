@@ -122,8 +122,7 @@ the median number of daily steps was
 > **Note:** The following in-line code was used to generate the mean
 > and median values in the previous paragraph:
 >
-> `(orig.mean <- sprintf("%0.2f", mean(daily.data$steps)))`
->
+> `(orig.mean <- sprintf("%0.2f", mean(daily.data$steps)))`  
 > `(orig.median <- sprintf("%0.2f", median(daily.data$steps)))`
 
 
@@ -361,8 +360,7 @@ the median number of daily steps was
 > **Note:** The following in-line code was used to generate the mean
 > and median values in the previous paragraph:
 >
-> `(imp.mean <- sprintf("%0.2f", mean(daily.data$steps)))`
->
+> `(imp.mean <- sprintf("%0.2f", mean(daily.data$steps)))`  
 > `(imp.median <- sprintf("%0.2f", median(daily.data$steps)))`
 
 Table `r (tbl.num <- tbl.num + 1)` compares the mean and median values
@@ -373,7 +371,7 @@ under 2%.
 |Statistic|Original Data    |Imputed Data   |Difference                   |
 |:--------|----------------:|--------------:|----------------------------:|
 |Mean     |`r orig.mean`    |`r imp.mean`   |`r as.numeric(imp.mean) - as.numeric(orig.mean)`     |
-|Median   |`r orig.median`  |`r imp.median` |`r as.numeric(imp.median) - as.numeric(orig.median)` | 
+|Median   |`r orig.median`  |`r imp.median` |`r as.numeric(imp.median) - as.numeric(orig.median)` |
 
 <span class="fig-caption">
 **Table. `r tbl.num` Stats for Original and Imputed Data.**
@@ -381,7 +379,17 @@ The table lists the statistics for the original and imputed
 datasets.
 </span>
 
-
+> **Note:** Table `r tbl.num` was generated using markdown and the
+> following inline code:
+>
+> ```
+> |Statistic|Original Data    |Imputed Data   |Difference                   |
+> |:--------|----------------:|--------------:|----------------------------:|
+```{r, echo=FALSE, results='asis'}
+cat("> |Mean     |`r orig.mean`    |`r imp.mean`   |`r as.numeric(imp.mean) - as.numeric(orig.mean)`     |\n")
+cat("> |Median   |`r orig.median`  |`r imp.median` |`r as.numeric(imp.median) - as.numeric(orig.median)` |\n")
+```
+> ```
 
 
 

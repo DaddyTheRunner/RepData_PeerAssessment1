@@ -134,8 +134,7 @@ hist.plot</code></pre>
 <p>The mean number of daily steps taken, when steps were recorded, was 10766.19 and the median number of daily steps was 10765.00.</p>
 <blockquote>
 <p><strong>Note:</strong> The following in-line code was used to generate the mean and median values in the previous paragraph:</p>
-<p><code>(orig.mean &lt;- sprintf(&quot;%0.2f&quot;, mean(daily.data$steps)))</code></p>
-<p><code>(orig.median &lt;- sprintf(&quot;%0.2f&quot;, median(daily.data$steps)))</code></p>
+<p><code>(orig.mean &lt;- sprintf(&quot;%0.2f&quot;, mean(daily.data$steps)))</code><br /><code>(orig.median &lt;- sprintf(&quot;%0.2f&quot;, median(daily.data$steps)))</code></p>
 </blockquote>
 </div>
 <div id="what-is-the-average-daily-activity-pattern" class="section level2">
@@ -312,8 +311,7 @@ hist.plot</code></pre>
 <p>The mean number of daily steps taken, when steps were recorded, was 10242.75 and the median number of daily steps was 10571.00.</p>
 <blockquote>
 <p><strong>Note:</strong> The following in-line code was used to generate the mean and median values in the previous paragraph:</p>
-<p><code>(imp.mean &lt;- sprintf(&quot;%0.2f&quot;, mean(daily.data$steps)))</code></p>
-<p><code>(imp.median &lt;- sprintf(&quot;%0.2f&quot;, median(daily.data$steps)))</code></p>
+<p><code>(imp.mean &lt;- sprintf(&quot;%0.2f&quot;, mean(daily.data$steps)))</code><br /><code>(imp.median &lt;- sprintf(&quot;%0.2f&quot;, median(daily.data$steps)))</code></p>
 </blockquote>
 <p>Table 2 compares the mean and median values for the original and imputed data sets. It shows that the imputation method used decreased the mean by a little under 5% and the median by a little under 2%.</p>
 <table>
@@ -341,6 +339,13 @@ hist.plot</code></pre>
 </tbody>
 </table>
 <p><span class="fig-caption"> <strong>Table. 2 Stats for Original and Imputed Data.</strong> The table lists the statistics for the original and imputed datasets. </span></p>
+<blockquote>
+<p><strong>Note:</strong> Table 2 was generated using markdown and the following inline code:</p>
+<pre><code>|Statistic|Original Data    |Imputed Data   |Difference                   |
+|:--------|----------------:|--------------:|----------------------------:|
+|Mean     |`r orig.mean`    |`r imp.mean`   |`r as.numeric(imp.mean) - as.numeric(orig.mean)`     |
+|Median   |`r orig.median`  |`r imp.median` |`r as.numeric(imp.median) - as.numeric(orig.median)` |</code></pre>
+</blockquote>
 </div>
 <div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
