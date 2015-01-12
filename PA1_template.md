@@ -6,7 +6,7 @@ output:
 
 # Reproducible Research: Peer Assessment 1
 _**Author:  Daddy the Runner**_  
-_**Date:  Sunday, January 11, 2015**_
+_**Date:  Monday, January 12, 2015**_
 
 <!-- Processing Instructions --------------------------------------- -->
 <!--                                                                 -->
@@ -36,12 +36,18 @@ p {
 
 ## Loading and preprocessing the data
 
-First, we load all required libraries.
+First, we load all required libraries. And initialize some variables.
 
 
 ```r
 require(dplyr)
 require(ggplot2)
+
+## Create a figure counter
+fig.num <- 0L
+
+## Create a table counter
+tbl.num <- 0L
 ```
 
 The following code chunk will extract the data file from the
@@ -88,15 +94,15 @@ Finally `ggplot()` is invoked to generate the histogram graphic.
 ## group by day and sum the steps
 daily.data <- na.omit(data) %>% 
   group_by(date) %>%
-  summarize(steps = sum(steps, na.rm = TRUE))
+  summarize(steps = sum(steps))
 
-## Create a figure counter
-fig.num <- 1L
+## Increment the figure number
+fig.num <- fig.num + 1L
 
 ## Generate the plot
 hist.plot <- ggplot(daily.data, aes(x=steps)) +
-  geom_histogram(binwidth=5000, color="black", fill="green") +
-  scale_y_continuous(limits=c(0,30)) +
+  geom_histogram(binwidth=2500, color="black", fill="green") +
+  scale_y_continuous(limits=c(0,20)) +
   scale_x_continuous(limits=c(0,25000)) +
   xlab("Daily Steps") +
   ylab("Number of Days") +
@@ -117,14 +123,15 @@ within each of the bins across the x axis.
 
 The mean number of daily steps taken, when steps were recorded, was 
 10766.19 and
-the median number of daily steps was 10765.
+the median number of daily steps was
+10765.00.
 
 > **Note:** The following in-line code was used to generate the mean
 > and median values in the previous paragraph:
 >
-> `sprintf("%0.2f", mean(daily.data$steps))`
+> `(orig.mean <- sprintf("%0.2f", mean(daily.data$steps)))`
 >
-> `median(daily.data$steps)`
+> `(orig.median <- sprintf("%0.2f", median(daily.data$steps)))`
 
 
 
@@ -223,6 +230,190 @@ five minute interval.
 
 
 ## Imputing missing values
+
+In this section we will take a look at where there is missing data and
+determine how we will impute the data.  First we will generate a map of
+the NA values in the steps varialbe.  The following code chunk generates
+a plot with a point for each 5 minute interval that is missing data.
+
+
+```r
+## Increment the figure number
+fig.num <- fig.num + 1L
+
+## Create a map of the NA values
+na.steps <- is.na(data$steps)
+na.plot <- ggplot(data[na.steps, ], aes(x=time, y=date)) +
+  geom_point() +
+  scale_x_datetime(labels = date_format("%H:%M"),
+                   breaks = "4 hour", minor_breaks = "1 hour") +
+  ggtitle("Map of NAs\n") +
+  xlab("Time of Day") +
+  ylab("Date") +
+  theme(plot.title = element_text(lineheight=.8, face="bold"))
+na.plot
+```
+
+![plot of chunk map-of-NAs](figure/map-of-NAs-1.png) 
+
+<span class="fig-caption">
+**Fig. 3 Map of Missing Steps Data.**  The plot shows 
+all of the five minute intervals that are missing steps data.  The
+time of day is plotted along the x-axis and the date is plotted
+along the y-axis.
+</span>
+
+The simple plot in fig. 3 clearly shows that there are
+eight days with missing steps data.  The following code chunk 
+generates a table of the dates and the count of NAs fore each of
+the dates with missing steps data.
+
+
+```r
+## Increment the table number
+tbl.num <- tbl.num + 1L
+
+## Get a list of the days with no data and count the NAs
+na.days <- data.frame(Date = unique(data$date[na.steps])) %>%
+  mutate(na.count = sum(is.na(data$steps[data$date == Date])))
+total.na.count <- sum(na.days$na.count)
+
+## Generate a table of the results
+tbl <- kable(na.days, col.names = c("Days without Data", "NA Count"))
+for(i in 1:length(tbl)){
+  cat(tbl[i],"\n")
+  if (i == length(tbl)) cat(sprintf("|**Total** | **%i** |", total.na.count))
+}
+```
+
+|Days without Data | NA Count| 
+|:-----------------|--------:| 
+|2012-10-01        |      288| 
+|2012-10-08        |      288| 
+|2012-11-01        |      288| 
+|2012-11-04        |      288| 
+|2012-11-09        |      288| 
+|2012-11-10        |      288| 
+|2012-11-14        |      288| 
+|2012-11-30        |      288| 
+|**Total** | **2304** |
+
+<span class="fig-caption">
+**Table. 1 List of Days With Missing Data.**
+The table lists all of the days with missing steps data, the count of
+NAs for each day, and totals the counts.
+</span>
+
+As can be seen in the last row of table 1, the total number of
+missing data points is 2304.  The table also confirms that
+all of the 288 five minute intervals are missing for each day with missing
+data.
+
+Since all of the data for a given day is missing, it is not possible to use
+neighboring intervals from the same day to impute the data.  Therefore, we
+will have to use neighboring days to impute the data.  I chose to impute the
+data using a simple nearest neighbor averaging.  If the day with missing
+values has only one neighbor, the neighbor's data is simply copied.  If
+either or both of the neighbors have missing data, that missing data is
+covnerted into zeros before averaging.  The following code chunk implements
+this imputation algorithm.
+
+
+```r
+## Start off with a copy of the original data
+imputed.data <- data
+
+## First impute the first day's data with a copy of the second day
+day <- min(data$date)
+imputed.data$steps[imputed.data$date == day] <-
+  imputed.data$steps[imputed.data$date == day + 1]
+
+## Next impute the last day's data with a copy of the previous day
+day <- max(data$date)
+imputed.data$steps[imputed.data$date == day] <-
+  imputed.data$steps[imputed.data$date == day - 1]
+
+## Now impute the rest of the missing days with the average of the two
+## neighboring days treating NAs as zeros
+## First make a temporary copy of the original data and replace all NAs
+## with zeros
+tmp.data <- data %>%
+  mutate(steps = ifelse(is.na(steps), 0, steps))
+for (day in na.days$Date[2:(length(na.days$Date)-1)]){
+  imputed.data$steps[imputed.data$date == day] <-
+    (tmp.data$steps[tmp.data$date == day - 1] +
+     tmp.data$steps[tmp.data$date == day + 1]) / 2
+}
+```
+
+Now we can regenerate the histogram and statistical calculations performed
+in the first section.  The follow code chunk does that with the imputed
+data.  The original code chunk was copied and `imputed.` was added to all
+of the `data` variable calls
+
+
+```r
+## Create a histogram of the daily steps taken
+## group by day and sum the steps
+daily.data <- na.omit(imputed.data) %>% 
+  group_by(date) %>%
+  summarize(steps = sum(steps))
+
+## Increment the figure number
+fig.num <- fig.num + 1L
+
+## Generate the plot
+hist.plot <- ggplot(daily.data, aes(x=steps)) +
+  geom_histogram(binwidth=2500, color="black", fill="green") +
+  scale_y_continuous(limits=c(0,20)) +
+  scale_x_continuous(limits=c(0,25000)) +
+  xlab("Daily Steps") +
+  ylab("Number of Days") +
+  ggtitle("Histogram of Daily Steps (Imputed)\n") +
+  theme(plot.title = element_text(lineheight=.8, face="bold"))
+
+## Display the plot
+hist.plot
+```
+
+![plot of chunk make-daily-steps-histogram-imputed](figure/make-daily-steps-histogram-imputed-1.png) 
+
+<span class="fig-caption">
+**Fig. 4 Histogram of the daily steps (Imputed).**  The
+histogram shows the total number of days where the daily step count
+falls within each of the bins across the x axis for the imputed
+dataset.
+</span>
+
+The mean number of daily steps taken, when steps were recorded, was 
+10242.75 and
+the median number of daily steps was
+10571.00.
+
+> **Note:** The following in-line code was used to generate the mean
+> and median values in the previous paragraph:
+>
+> `(imp.mean <- sprintf("%0.2f", mean(daily.data$steps)))`
+>
+> `(imp.median <- sprintf("%0.2f", median(daily.data$steps)))`
+
+Table 2 compares the mean and median values
+for the original and imputed data sets.  It shows that the imputation method
+used decreased the mean by a little under 5% and the median by a little
+under 2%.
+
+|Statistic|Original Data    |Imputed Data   |Difference                   |
+|:--------|----------------:|--------------:|----------------------------:|
+|Mean     |10766.19    |10242.75   |-523.44     |
+|Median   |10765.00  |10571.00 |-194 | 
+
+<span class="fig-caption">
+**Table. 2 Stats for Original and Imputed Data.**
+The table lists the statistics for the original and imputed
+datasets.
+</span>
+
+
 
 
 

@@ -68,3 +68,59 @@ max(ts.data$avg.steps)
 
 ## The following expression gives the time of the max
 format(ts.data$time[which.max(ts.data$avg.steps)], format="%H:%M")
+
+
+
+## Combine the date and time columns into a date.time column
+data <- data %>%
+  mutate(date.time =
+           as.POSIXct(paste(format(date, format="%Y-%m-%d"),
+                            format(time, format="%H:%M"))))
+
+## Create a map of the NA values
+na.steps <- is.na(data$steps)
+na.plot <- ggplot(data[na.steps, ], aes(x=time, y=date)) +
+  geom_point() +
+  scale_x_datetime(labels = date_format("%H:%M"),
+                   breaks = "4 hour", minor_breaks = "1 hour") +
+  ggtitle("Map of NAs\n") +
+  xlab("Time of Day") +
+  ylab("Date") +
+  theme(plot.title = element_text(lineheight=.8, face="bold"))
+na.plot
+
+## Get a list of the days with no data
+na.days <- data.frame(Date = unique(data$date[na.steps])) %>%
+  mutate(na.count = sum(is.na(data$steps[data$date == Date])))
+kable(na.days, col.names = c("Days without Data", "NA Count"))
+cat("|Total|", sum(na.days$na.count), "|")
+
+## Caluclate the total number of missing values
+sum(na.days$na.count)
+
+min(data$date)
+max(data$date)
+
+## Impute the data
+imputed.data <- data
+
+## First impute the first day's data with a copy of the second day
+day <- min(data$date)
+imputed.data$steps[imputed.data$date == day] <-
+  imputed.data$steps[imputed.data$date == day + 1]
+
+## Next impute the last day's data with a copy of the previous day
+day <- max(data$date)
+imputed.data$steps[imputed.data$date == day] <-
+  imputed.data$steps[imputed.data$date == day - 1]
+
+## Now impute the rest of the missing days with the average of the two
+## neighboring days treating NAs as zeros
+## First make a temporary copy of the data and replace all NAs with zeros
+tmp.data <- data %>%
+  mutate(steps = ifelse(is.na(steps), 0, steps))
+for (day in na.days$Date[2:(length(na.days$Date)-1)]){
+  imputed.data$steps[imputed.data$date == day] <-
+    (tmp.data$steps[tmp.data$date == day - 1] +
+     tmp.data$steps[tmp.data$date == day + 1]) / 2
+}
