@@ -1,6 +1,7 @@
 ## This file is used to test and debug coding chunks
 require(dplyr)
 require(ggplot2)
+require(scales)
 
 data.fn <- "activity.csv"
 zip.fn <- "activity.zip"
@@ -124,3 +125,57 @@ for (day in na.days$Date[2:(length(na.days$Date)-1)]){
     (tmp.data$steps[tmp.data$date == day - 1] +
      tmp.data$steps[tmp.data$date == day + 1]) / 2
 }
+
+
+## The following function determines if a given date falls on a weekend
+is.weekend <- function(date) {
+  day <- weekdays(date)
+  day == "Sunday" | day == "Saturday"
+}
+
+## Create a weekday vs weekend factor for the imputed data
+imputed.data <- imputed.data %>%
+  mutate(day.type = ifelse(is.weekend(date), "Weekend", "Weekday"),
+         day.type = factor(day.type, levels = c("Weekend", "Weekday")))
+
+## generate the time series data using the imputed data
+imputed.ts.data <- imputed.data %>%
+  group_by(day.type, time) %>%
+  summarize(avg.steps = mean(steps, na.rm = TRUE))
+
+## Analysis of imputed data time series
+start.time <- as.POSIXct("2015-01-13 10:00:00")
+end.time   <- as.POSIXct("2015-01-13 22:00:00")
+postpeak.avgs <- imputed.ts.data %>%
+  group_by(day.type) %>%
+  filter(time >= start.time, time <= end.time) %>%
+  summarize(avg = mean(avg.steps))
+
+## Calculate the value and location of the peaks
+peaks <- imputed.ts.data %>%
+  group_by(day.type) %>%
+  summarize(max = max(avg.steps),
+            max.time = time[which.max(avg.steps)])
+
+## Generate the time series plot
+imputed.ts.plot <- ggplot(data = imputed.ts.data, aes(x = time, y = avg.steps)) +
+  geom_line() +
+  geom_segment(data = postpeak.avgs,
+               aes(x = start.time, xend = end.time, y = avg, yend = avg),
+               color = "green", lwd = 1) +
+  geom_text(data = postpeak.avgs,
+            aes(x = end.time, y = avg + 10, label = sprintf("Avg = %0.2f", avg)),
+            hjust = 0, vjust = 0) +
+  geom_text(data = peaks,
+            aes(x = start.time, y = 200, label = sprintf("Max = %0.2f", max)),
+            hjust = 0, vjust = 0) +
+  facet_grid(day.type ~ .) +
+  scale_x_datetime(labels = date_format("%H:%M"),
+                   breaks = "4 hour", minor_breaks = "1 hour") +
+  xlab("Time of Day") +
+  ylab("Steps") +
+  ggtitle("Average Steps Taken\n(5 minute intervals)\n") +
+  theme(plot.title = element_text(lineheight = 0.8, face = "bold"))
+
+imputed.ts.plot
+

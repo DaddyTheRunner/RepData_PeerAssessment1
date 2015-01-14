@@ -41,6 +41,7 @@ First, we load all required libraries. And initialize some variables.
 ```{r load-libraries, warning=FALSE, error=FALSE, message=FALSE}
 require(dplyr)
 require(ggplot2)
+require(scales)
 
 ## Create a figure counter
 fig.num <- 0L
@@ -154,7 +155,7 @@ data <- data %>%
   mutate(hour = interval %/% 100,
          min = interval %% 100,
          timestr = sprintf("%02i:%02i", hour, min),
-         time = as.POSIXct(timestr, format="%H:%M"))
+         time = as.POSIXct(paste("2015-01-01", timestr), format="%Y-%m-%d %H:%M"))
 ```
 
 The following code chunk generates a new data frame that contains the
@@ -394,3 +395,127 @@ cat("> |Median   |`r orig.median`  |`r imp.median` |`r as.numeric(imp.median) - 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+In this final section, we explore the data to see if there are differences
+in the activity patterns between weekdays and weekends.  The imputed data
+set was used for this analysis.  The first step is to create a new factor
+that divides the data into weekday and weekend based on the date the
+activity was recorded.  The following code chunk does that.
+
+```{r weekday-type}
+## The following function determines if a given date falls on a weekend
+is.weekend <- function(date) {
+  day <- weekdays(date)
+  day == "Sunday" | day == "Saturday"
+}
+
+## Create a weekday vs weekend factor for the imputed data
+imputed.data <- imputed.data %>%
+  mutate(day.type = ifelse(is.weekend(date), "Weekend", "Weekday"),
+         day.type = factor(day.type, levels = c("Weekend", "Weekday")))
+```
+
+Now we can repeat the time series analysis using the weekday vs weekend
+grouping.  The following code chunk groups the data by day type and five
+minute interval and then sumarizes the data using the mean function.
+
+```{r generate-ts-data-for-day-type}
+## generate the time series data using the imputed data
+imputed.ts.data <- imputed.data %>%
+  group_by(day.type, time) %>%
+  summarize(avg.steps = mean(steps, na.rm = TRUE))
+```
+
+The following code chunk calculates some statistics for the two sets of
+time series data.  It calculates the peak activity level, determines the
+time of the peak, and calculates an average value for the activity between
+10:00 AM and 10::00 PM.
+
+```{r calculate-ts-stats}
+## Analysis of imputed data time series
+start.time <- as.POSIXct("2015-01-01 10:00:00")
+end.time   <- as.POSIXct("2015-01-01 22:00:00")
+postpeak.avgs <- imputed.ts.data %>%
+  group_by(day.type) %>%
+  filter(time >= start.time, time <= end.time) %>%
+  summarize(avg = mean(avg.steps))
+
+## Calculate the value and location of the peaks
+peaks <- imputed.ts.data %>%
+  group_by(day.type) %>%
+  summarize(max = max(avg.steps),
+            max.time = format(time[which.max(avg.steps)], format="%H:%M"))
+```
+
+The following code chunk uses the new time series data grouped by day type
+to generate a panel plot of the two time series for comparison.
+
+```{r generate-ts-plot-for-day-type, fig.width=12}
+## Generate the time series plot
+imputed.ts.plot <- ggplot(data = imputed.ts.data, aes(x = time, y = avg.steps)) +
+  geom_line() +
+  geom_segment(data = postpeak.avgs,
+               aes(x = start.time, xend = end.time, y = avg, yend = avg),
+               color = "green", lwd = 1) +
+  geom_text(data = postpeak.avgs,
+            aes(x = end.time, y = avg + 10, label = sprintf("Avg = %0.2f", avg)),
+            hjust = 0, vjust = 0) +
+  geom_text(data = peaks,
+            aes(x = start.time, y = 200, label = sprintf("Max = %0.2f", max)),
+            hjust = 0, vjust = 0) +
+  facet_grid(day.type ~ .) +
+  scale_x_datetime(labels = date_format("%H:%M"),
+                   breaks = "4 hour", minor_breaks = "1 hour") +
+  xlab("Time of Day") +
+  ylab("Steps") +
+  ggtitle("Average Steps Taken\n(5 minute intervals)\n") +
+  theme(plot.title = element_text(lineheight = 0.8, face = "bold"))
+
+## Increment the figure number
+fig.num <- fig.num + 1L
+
+## Dispaly the plot
+imputed.ts.plot
+```
+
+<span class="fig-caption">
+**Fig. `r fig.num` Comparison of Average Daily Activity Patterns.**
+The time series plots shows the average (mean) number of steps taken
+in each five minute interval throughout the course of a day grouped
+by weekend and weekday.  The averages were calculated from data
+collected over a two month period in 2012.
+</span>
+
+The following code chunk creates a table of the statistics for the two
+time series.
+
+```{r ts-stats-table}
+## Increment the table number
+tbl.num <- tbl.num + 1L
+
+## Generate the table
+kable(merge(peaks, postpeak.avgs), digits = 2,
+      col.names=c("Day Type", "Peak Activity Level",
+                  "Time of Peak Activity",
+                  "Average Activity Level (10:00 - 22:00)"))
+```
+
+<span class="fig-caption">
+**Table. `r tbl.num` Peak and Mean Activity Levels.**
+This table lists the statistics calculated for the time series
+shown in figure `r fig.num`.
+</span>
+
+Fig. `r fig.num` and Table `r tbl.num` show some slight differences
+in the average daily activity patterns for weekends and weekdays.
+On week days, there is a rapid rise in activity around 6:00 AM whereas
+on the weekends, the morning activity rises more gradually over a two
+hour period.  The morning peak activity is slightly higher on weekdays
+and occurs about 40 minutes earlier in the day.  The afternoon
+activity levels appear to be higher on the weekends.  Finally,
+the daily activity appears to trail off about two hours earlier on
+weekdays.
+
+In conclusion it would appear that there are slight but significant
+differences in the average daily activity patterns for weekdays as
+compared to weekends.
