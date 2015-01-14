@@ -522,15 +522,6 @@ by weekend and weekday.  The averages were calculated from data
 collected over a two month period in 2012.
 </span>
 
-Fig. 5 shows some slight differences in the average daily
-activity patterns for weekends and weekdays.  On week days, there is
-a rapid rise in activity around 6:00 AM whereas on the weekends, the
-morning activity rises more gradually over a two hour period.  The
-morning peak activity is slightly higher on weekdays but the afternoon
-activity levels appear to be slightly higher on the weekends.  Finally,
-the daily activity appears to trail off about two hours earlier on
-weekdays.
-
 The following code chunk creates a table of the statistics for the two
 time series.
 
@@ -559,3 +550,16 @@ This table lists the statistics calculated for the time series
 shown in figure 5.
 </span>
 
+Fig. 5 and Table 3 show some slight differences
+in the average daily activity patterns for weekends and weekdays.
+On week days, there is a rapid rise in activity around 6:00 AM whereas
+on the weekends, the morning activity rises more gradually over a two
+hour period.  The morning peak activity is slightly higher on weekdays
+and occurs about 40 minutes earlier in the day.  The afternoon
+activity levels appear to be higher on the weekends.  Finally,
+the daily activity appears to trail off about two hours earlier on
+weekdays.
+
+In conclusion it would appear that there are slight but significant
+differences in the average daily activity patterns for weekdays as
+compared to weekends.
