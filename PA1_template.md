@@ -16,6 +16,29 @@ _**Date:  Wednesday, January 14, 2015**_
 <!--                                                                 -->
 <!-- --------------------------------------------------------------- -->
 
+## Introduction and Explanations
+
+This report was written using R markdown and processed using the `knitr`
+and `markdown` packages.  The report is best viewed in the final HTML
+format.  However, GitHub's default method of displaying HTML documents is
+to show the raw HTML.  Therefore, for the purposes of this class
+project, the intermediate markdown file is viewed using GitHub.
+Unfortunately, the GitHub rendering of the markdown file ignores some of
+the HTML code included in the R markdown file for formatting the final
+HTLM report.  Therefore, the intermediate markdown file contains an
+output header table that can't be suppressed and the style template is
+printed at the top of the document.
+
+The R markdown file was processed using the following commands:
+
+
+```r
+knit("PA1_template.Rmd")
+render("PA1_template.md")
+```
+
+<!-- The following formatting section is ignored by GitHub but is    -->
+<!-- used in the generation of an HTML report.                       -->
 
 <!-- Create some style elements for the HTML file -->
 <style>
@@ -355,21 +378,29 @@ of the `data` variable calls
 ```r
 ## Create a histogram of the daily steps taken
 ## group by day and sum the steps
-daily.data <- na.omit(imputed.data) %>% 
+imputed.daily.data <- na.omit(imputed.data) %>% 
   group_by(date) %>%
-  summarize(steps = sum(steps))
+  summarize(steps = sum(steps)) %>%
+  mutate(dataset = "Imputed Data")
+
+daily.data <- daily.data %>%
+  mutate(dataset = "Original Data")
+
+all.daily.data <- rbind(imputed.daily.data, daily.data) %>%
+  mutate(dataset = factor(dataset))
 
 ## Increment the figure number
 fig.num <- fig.num + 1L
 
 ## Generate the plot
-hist.plot <- ggplot(daily.data, aes(x=steps)) +
+hist.plot <- ggplot(all.daily.data, aes(x=steps)) +
   geom_histogram(binwidth=2500, color="black", fill="green") +
+  facet_grid(. ~ dataset) +
   scale_y_continuous(limits=c(0,20)) +
   scale_x_continuous(limits=c(0,25000)) +
   xlab("Daily Steps") +
   ylab("Number of Days") +
-  ggtitle("Histogram of Daily Steps (Imputed)\n") +
+  ggtitle("Histogram of Daily Steps (Imputed vs Original)\n") +
   theme(plot.title = element_text(lineheight=.8, face="bold"))
 
 ## Display the plot
@@ -379,13 +410,14 @@ hist.plot
 ![plot of chunk make-daily-steps-histogram-imputed](figure/make-daily-steps-histogram-imputed-1.png) 
 
 <span class="fig-caption">
-**Fig. 4 Histogram of the daily steps (Imputed).**  The
-histogram shows the total number of days where the daily step count
-falls within each of the bins across the x axis for the imputed
-dataset.
+**Fig. 4 Comparison of Histograms of the daily steps (Imputed vs Original).**
+The histograms show the total number of days where the daily
+step count falls within each of the bins across the x axis for
+the imputed and original data sets.
 </span>
 
-The mean number of daily steps taken, when steps were recorded, was 
+For the imputed data set, the mean number of daily steps taken,
+when steps were recorded, was 
 10242.75 and
 the median number of daily steps was
 10571.00.
@@ -393,8 +425,8 @@ the median number of daily steps was
 > **Note:** The following in-line code was used to generate the mean
 > and median values in the previous paragraph:
 >
-> `(imp.mean <- sprintf("%0.2f", mean(daily.data$steps)))`  
-> `(imp.median <- sprintf("%0.2f", median(daily.data$steps)))`
+> `(imp.mean <- sprintf("%0.2f", mean(imputed.daily.data$steps)))`  
+> `(imp.median <- sprintf("%0.2f", median(imputed.daily.data$steps)))`
 
 Table 2 compares the mean and median values
 for the original and imputed data sets.  It shows that the imputation method
@@ -422,6 +454,11 @@ datasets.
 > |Median   |`r orig.median`  |`r imp.median` |`r as.numeric(imp.median) - as.numeric(orig.median)` |
 > ```
 
+The two histograms in fig. 4 show a total increase in the number
+of days with recorded activity for the imputed data as we would expect.
+They also show that the increases fell mostly in the lower bins.  This
+results in the low mean and median values for the imputed data set as
+seen in table 2.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
