@@ -95,7 +95,7 @@ following code.
 data <- read.csv(data.fn, stringsAsFactors = FALSE)
 ```
 
-Now we are ready to preprocess the data.
+Now we are ready to pre-process the data.
 
 
 ```r
@@ -108,7 +108,7 @@ data <- mutate(data, date = as.Date(date))
 ## What is mean total number of steps taken per day?
 
 The following code generates a histogram of the daily steps taken.
-First the data is processed to remove all of the missin (NA) values.
+First the data is processed to remove all of the missing (NA) values.
 Then it is grouped by date and summarized using the `sum()` function.
 Finally `ggplot()` is invoked to generate the histogram graphic.
 
@@ -166,18 +166,18 @@ five minute intervals across all days with available data.  (i.e. we will be
 ignoring intervals with NAs.)  Then a time series line plot will be generated
 and analyzed.
 
-First we have to process the interval data from the raw dataset.  An
+First we have to process the interval data from the raw data set.  An
 inspection of the values in the interval variable indicate that the five
 minute intervals have been coded with the hours in the 1000's and 100's
 places and the minutes in the 10's and 1's places.  Therefore, we cannot
 simply use the interval variable as-is for the horizontal x-axis.
 
 The following code chunk creates a new variable called time that uses the
-POSIXct date-time format.  POSIXct requires a date component.  However,
+`POSIXct` date-time format.  `POSIXct` requires a date component.  However,
 since we are only interested in the hours and minutes part, we can safely
 use any date for the date part as long as all of the values use the same
 date.  Some helper columns are generated in the process of creating the
-time column.  Since the dataset is small, these helper columns were kept.
+time column.  Since the data set is small, these helper columns were kept.
 
 
 ```r
@@ -190,8 +190,8 @@ data <- data %>%
 ```
 
 The following code chunk generates a new data frame that contains the
-five minute intervals in the time variable and the average (mean) of each
-interval in the avg.steps variable.
+five minute intervals in the `time` variable and the average (mean) of each
+interval in the `avg.steps` variable.
 
 
 ```r
@@ -202,7 +202,7 @@ ts.data <- data %>%
 ```
 
 Now use the data frame generated in the previous code chunk to generate
-a line plot of the averge number of steps for each interval.
+a line plot of the average number of steps for each interval.
 
 
 ```r
@@ -238,7 +238,7 @@ around 6:00 AM and that activity levels gradually wound down between
 7:00 PM and 10:00 PM.
 The maximum average (mean) number of steps across all five minute
 intervals was 206.1698113.  This maximum average
-occured in the
+occurred in the
 08:35
 five minute interval.
 
@@ -256,7 +256,7 @@ five minute interval.
 
 In this section we will take a look at where there is missing data and
 determine how we will impute the data.  First we will generate a map of
-the NA values in the steps varialbe.  The following code chunk generates
+the NA values in the steps variable.  The following code chunk generates
 a plot with a point for each 5 minute interval that is missing data.
 
 
@@ -338,7 +338,7 @@ will have to use neighboring days to impute the data.  I chose to impute the
 data using a simple nearest neighbor averaging.  If the day with missing
 values has only one neighbor, the neighbor's data is simply copied.  If
 either or both of the neighbors have missing data, that missing data is
-covnerted into zeros before averaging.  The following code chunk implements
+converted into zeros before averaging.  The following code chunk implements
 this imputation algorithm.
 
 
@@ -371,8 +371,9 @@ for (day in na.days$Date[2:(length(na.days$Date)-1)]){
 
 Now we can regenerate the histogram and statistical calculations performed
 in the first section.  The follow code chunk does that with the imputed
-data.  The original code chunk was copied and `imputed.` was added to all
-of the `data` variable calls
+data.  The code chunk also combines the two histogram data sets and applies
+a factor variable that enables a side-by-side comparison of the two
+histograms.
 
 
 ```r
@@ -416,8 +417,7 @@ step count falls within each of the bins across the x axis for
 the imputed and original data sets.
 </span>
 
-For the imputed data set, the mean number of daily steps taken,
-when steps were recorded, was 
+For the imputed data set, the mean number of daily steps taken was 
 10242.75 and
 the median number of daily steps was
 10571.00.
@@ -441,7 +441,7 @@ under 2%.
 <span class="fig-caption">
 **Table. 2 Stats for Original and Imputed Data.**
 The table lists the statistics for the original and imputed
-datasets.
+data sets.
 </span>
 
 > **Note:** Table 2 was generated using markdown and the
@@ -457,7 +457,7 @@ datasets.
 The two histograms in fig. 4 show a total increase in the number
 of days with recorded activity for the imputed data as we would expect.
 They also show that the increases fell mostly in the lower bins.  This
-results in the low mean and median values for the imputed data set as
+results in the lower mean and median values for the imputed data set as
 seen in table 2.
 
 
@@ -485,7 +485,7 @@ imputed.data <- imputed.data %>%
 
 Now we can repeat the time series analysis using the weekday vs weekend
 grouping.  The following code chunk groups the data by day type and five
-minute interval and then sumarizes the data using the mean function.
+minute interval and then summarizes the data using the mean function.
 
 
 ```r
