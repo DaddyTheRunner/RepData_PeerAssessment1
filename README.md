@@ -1,3 +1,17 @@
+# Peer Assessment #1
+
+Author:  Daddy the Runner  
+Date:  January 14, 2015
+
+This repository contains all of the files generated and used in the
+first peer assessment in the Reproducible Research Class. The
+reproducible research report can be read by opening the
+[PA1_template.md](PA1_template.md) markdown file which was generated
+from the `PA1_template.Rmd` R markdown file.
+
+The rest of this README file is the original project README from the
+class instructor.
+
 ## Introduction
 
 It is now possible to collect a large amount of data about personal
